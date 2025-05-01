@@ -35,4 +35,25 @@ const authUser = asyncHandler(async (req, res, next) => {
   }
 });
 
-export { authUser };
+const protect = asyncHandler(async (req, res, next) => {
+  let token = req.headers.authorization?.split(" ")[1];
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET as string
+      ) as jwt.JwtPayload & { _id: string };
+      req.user = await User.findById(decoded._id).select("-password");
+
+      next();
+    } catch (err) {
+      res.status(401);
+      throw new Error("Not authorized, token failed");
+    }
+  } else {
+    res.status(401);
+    throw new Error("Not authorized, no token");
+  }
+});
+export { authUser, protect };

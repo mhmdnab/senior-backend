@@ -44,4 +44,9 @@ const addProduct = asyncHandler(async (req, res) => {
   res.status(201).json(createdItem);
 });
 
-export { getProductById, getProducts, addProduct };
+const getUserProducts = asyncHandler(async (req, res) => {
+  const products = await Product.find({ owner: req.user._id });
+  res.status(200).json(products);
+});
+
+export { getProductById, getProducts, addProduct, getUserProducts };
