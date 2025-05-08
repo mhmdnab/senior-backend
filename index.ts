@@ -1,39 +1,53 @@
+// --- Imports ---
 import express from "express";
-import authRoutes from "./routes/authRoutes";
-import userRoutes from "./routes/userRoutes";
-import productRoutes from "./routes/productRoutes";
-import { notFound, errorHandler } from "./middleware/errorMiddleware";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+
+import authRoutes from "./routes/authRoutes";
+import userRoutes from "./routes/userRoutes";
+import productRoutes from "./routes/productRoutes";
+import barterRoutes from "./routes/barterRoutes";
+import { notFound, errorHandler } from "./middleware/errorMiddleware";
+
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
+// --- Middleware Setup ---
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 app.use(express.json());
+app.use(cookieParser());
 
-// routes
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/products", productRoutes);
-
-// Error handlers
-app.use(notFound);
-app.use(errorHandler);
-
-// Test route
+// --- Health Check Route ---
 app.get("/", (req, res) => {
   res.send("Backend is running ✨");
 });
 
-// MongoDB
+// --- Mounting Routes ---
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/barter", barterRoutes);
+
+// --- Error Handling Middleware ---
+app.use(notFound);
+app.use(errorHandler);
+
+// --- MongoDB Connection & Server Start ---
+const PORT = process.env.PORT || 5000;
+
 mongoose
   .connect(process.env.MONGO_URI as string)
   .then(() => {
-    console.log("MongoDB connected");
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    console.log("✅ MongoDB connected");
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   })
-  .catch((err: any) => console.log(err));
+  .catch((err: any) => console.error("❌ MongoDB connection error:", err));

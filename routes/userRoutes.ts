@@ -1,14 +1,17 @@
+// userRoutes.ts
+
 import express from "express";
 import {
   getUserProfile,
   updateUserProfile,
 } from "../controllers/userController";
-import { authUser } from "../middleware/authMiddleware";
+import { protect } from "../middleware/authMiddleware"; // Assuming correct path
 
 const router = express.Router();
 
 router
   .route("/profile")
-  .get(authUser, getUserProfile)
-  .put(authUser, updateUserProfile);
+  .get(protect, getUserProfile)
+  .put(protect, updateUserProfile);
+
 export default router;

@@ -1,59 +1,68 @@
-import jwt from "jsonwebtoken";
+// authMiddleware.ts
+
+import jwt, { JwtPayload } from "jsonwebtoken";
 import User from "../models/User";
 import asyncHandler from "express-async-handler";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 
-const authUser = asyncHandler(async (req, res, next) => {
-  let token;
+interface AuthRequest extends Request {
+  user?: string | JwtPayload;
+}
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    try {
-      token = req.headers.authorization.split(" ")[1];
+// export const authUser = asyncHandler(async (req: any, res: any, next: any) => {
+//   let token;
 
-      interface MyJwtPayload extends jwt.JwtPayload {
-        id: string;
-      }
+//   if (
+//     req.headers.authorization &&
+//     req.headers.authorization.startsWith("Bearer")
+//   ) {
+//     try {
+//       token = req.headers.authorization.split(" ")[1];
 
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET as string
-      ) as MyJwtPayload;
+//       interface MyJwtPayload extends jwt.JwtPayload {
+//         id: string;
+//       }
 
-      req.user = await User.findById(decoded.id).select("-password");
-      next();
-    } catch (error) {
-      console.error(error);
-      res.status(401);
-      throw new Error("Not authorized");
-    }
+//       const decoded = jwt.verify(
+//         token,
+//         process.env.JWT_SECRET as string
+//       ) as MyJwtPayload;
+
+//       req.user = await User.findById(decoded.id).select("-password");
+//       next();
+//     } catch (error) {
+//       // Removed internal console.error
+//       res.status(401);
+//       throw new Error("Not authorized");
+//     }
+//   }
+//   if (!token) {
+//     res.status(401);
+//     throw new Error("Not authorized");
+//   }
+// });
+
+export const protect = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    res.status(401).json({ message: "Not authorized, token missing" });
+    return;
   }
-  if (!token) {
-    res.status(401);
-    throw new Error("Not authorized");
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
+      id: string;
+    };
+    req.user = { id: decoded.id };
+    next();
+  } catch (err) {
+    res.status(401).json({ message: "Not authorized, token invalid" });
   }
-});
-
-const protect = asyncHandler(async (req, res, next) => {
-  let token = req.headers.authorization?.split(" ")[1];
-
-  if (token) {
-    try {
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET as string
-      ) as jwt.JwtPayload & { _id: string };
-      req.user = await User.findById(decoded._id).select("-password");
-
-      next();
-    } catch (err) {
-      res.status(401);
-      throw new Error("Not authorized, token failed");
-    }
-  } else {
-    res.status(401);
-    throw new Error("Not authorized, no token");
-  }
-});
-export { authUser, protect };
+};

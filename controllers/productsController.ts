@@ -1,6 +1,7 @@
-import mongoose from "mongoose";
-import Product from "../models/Product";
+// productsController.ts
+
 import asyncHandler from "express-async-handler";
+import Item from "../models/Product";
 
 const getProducts = asyncHandler(async (req, res) => {
   const { category } = req.query;
@@ -9,44 +10,62 @@ const getProducts = asyncHandler(async (req, res) => {
     ? { category: { $regex: new RegExp(`^${category}$`, "i") } }
     : {};
 
-  const products = await Product.find(filter).populate("owner", "username");
+  const products = await Item.find(filter).populate("owner", "username");
 
   res.status(200).json(products);
 });
 
 const getProductById = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  console.log(req.params.id);
+  const product = await Item.findById(req.params.id);
   if (product) {
     res.status(200).json(product);
   } else {
     res.status(404);
-    throw new Error("Product not found");
+    throw new Error("Product Not Found");
   }
 });
 
-const addProduct = asyncHandler(async (req, res) => {
+const addProduct = asyncHandler(async (req: any, res: any) => {
   const { title, description, category, images } = req.body;
 
   if (!title) {
     res.status(400);
     throw new Error("Title is required");
   }
+  if (!req.user?._id) {
+    res.status(401);
+    throw new Error("User not authenticated");
+  }
 
-  const item = new Product({
+  const item = new Item({
     title,
     description,
     category,
     images,
-    owner: new mongoose.Types.ObjectId("67fd269ad453645455009b4c"), // assuming you have authentication and set req.user
+    owner: req.user._id,
   });
 
   const createdItem = await item.save();
   res.status(201).json(createdItem);
 });
 
-const getUserProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find({ owner: req.user._id });
-  res.status(200).json(products);
+const getUserProducts = asyncHandler(async (req: any, res: any) => {
+  try {
+    if (!req.user?._id) {
+      res.status(401);
+      throw new Error("User not authenticated");
+    }
+
+    const products = await Item.find({ owner: req.user.id }).populate(
+      "owner",
+      "username"
+    );
+
+    res.status(200).json(products);
+  } catch (error: any) {
+    throw error;
+  }
 });
 
-export { getProductById, getProducts, addProduct, getUserProducts };
+export { getProducts, addProduct, getProductById, getUserProducts };
