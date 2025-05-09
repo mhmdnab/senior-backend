@@ -49,20 +49,26 @@ export const protect = (
 ): void => {
   const authHeader = req.headers.authorization;
 
+  console.log("Authorization Header:", authHeader);
+
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     res.status(401).json({ message: "Not authorized, token missing" });
     return;
   }
 
   const token = authHeader.split(" ")[1];
+  console.log("Token:", token);
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
       id: string;
     };
+    console.log("Decoded Token:", decoded);
     req.user = { id: decoded.id };
+    console.log("req.user:", req.user);
     next();
   } catch (err) {
+    console.error("JWT Verification Error:", err);
     res.status(401).json({ message: "Not authorized, token invalid" });
   }
 };

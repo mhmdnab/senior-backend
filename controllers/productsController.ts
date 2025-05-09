@@ -33,7 +33,8 @@ const addProduct = asyncHandler(async (req: any, res: any) => {
     res.status(400);
     throw new Error("Title is required");
   }
-  if (!req.user?._id) {
+  console.log(req.user.id);
+  if (!req.user?.id) {
     res.status(401);
     throw new Error("User not authenticated");
   }
