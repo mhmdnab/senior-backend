@@ -2,6 +2,7 @@
 
 import asyncHandler from "express-async-handler";
 import Item from "../models/Product";
+import User from "../models/User";
 
 const getProducts = asyncHandler(async (req, res) => {
   const { category } = req.query;
@@ -33,8 +34,8 @@ const addProduct = asyncHandler(async (req: any, res: any) => {
     res.status(400);
     throw new Error("Title is required");
   }
-  console.log(req.user.id);
-  if (!req.user?.id) {
+  //
+  if (!req.user?._id) {
     res.status(401);
     throw new Error("User not authenticated");
   }
@@ -46,7 +47,7 @@ const addProduct = asyncHandler(async (req: any, res: any) => {
     images,
     owner: req.user._id,
   });
-
+  console.log(req.user._id);
   const createdItem = await item.save();
   res.status(201).json(createdItem);
 });

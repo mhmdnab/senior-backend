@@ -6,7 +6,9 @@ import asyncHandler from "express-async-handler";
 import { Request, Response, NextFunction, RequestHandler } from "express";
 
 interface AuthRequest extends Request {
-  user?: string | JwtPayload;
+  user?: {
+    _id: string;
+  };
 }
 
 // export const authUser = asyncHandler(async (req: any, res: any, next: any) => {
@@ -49,23 +51,20 @@ export const protect = (
 ): void => {
   const authHeader = req.headers.authorization;
 
-  console.log("Authorization Header:", authHeader);
-
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     res.status(401).json({ message: "Not authorized, token missing" });
     return;
   }
 
   const token = authHeader.split(" ")[1];
-  console.log("Token:", token);
+  // console.log("Token:", token);
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
       id: string;
     };
-    console.log("Decoded Token:", decoded);
-    req.user = { id: decoded.id };
-    console.log("req.user:", req.user);
+    req.user = { _id: decoded.id };
+    console.log("req.user:", req.user._id);
     next();
   } catch (err) {
     console.error("JWT Verification Error:", err);

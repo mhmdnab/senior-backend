@@ -2,6 +2,7 @@
 
 import asyncHandler from "express-async-handler";
 import mongoose from "mongoose";
+import nodemailer from "nodemailer";
 import Item from "../models/Product";
 
 // @desc    Initiate a barter request
@@ -69,6 +70,29 @@ const initiateBarter = asyncHandler(async (req: any, res: any) => {
   res.status(200).json({
     message: "Barter initiated successfully. Contact the other user.",
     otherUserEmail: otherUserEmail,
+  });
+
+  const mailOptions = {
+    from: "mhmdnab004@gmail.com",
+    to: otherUserEmail,
+    subject: "Barter Request Initiated",
+    text: `You have initiated a barter request for your product. Please contact them to proceed.`,
+  };
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "mhmdnab004@gmail.com",
+      pass: "moudinab004",
+    },
+  });
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error("Error sending email:", error);
+    } else {
+      console.log("Email sent:", info.response);
+    }
   });
 });
 

@@ -9,7 +9,7 @@ import {
 import { protect } from "../middleware/authMiddleware";
 
 const router = express.Router();
-router.get("/", protect, getProducts);
+router.get("/", getProducts);
 router.get("/:id", getProductById);
 router.post("/", protect, addProduct);
 

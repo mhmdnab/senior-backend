@@ -13,10 +13,10 @@ import { notFound, errorHandler } from "./middleware/errorMiddleware";
 dotenv.config();
 
 const app = express();
-app.use((req, res, next) => {
-  console.log(` incoming request: ${req.method} ${req.originalUrl}`);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log(` incoming request: ${req.method} ${req.originalUrl}`);
+//   next();
+// });
 // --- Middleware Setup ---
 app.use(
   cors({
