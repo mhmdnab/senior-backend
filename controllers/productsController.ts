@@ -18,7 +18,10 @@ const getProducts = asyncHandler(async (req, res) => {
 
 const getProductById = asyncHandler(async (req, res) => {
   console.log(req.params.id);
-  const product = await Item.findById(req.params.id);
+  const product = await Item.findById(req.params.id).populate(
+    "owner",
+    "username"
+  );
   if (product) {
     res.status(200).json(product);
   } else {

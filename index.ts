@@ -8,6 +8,7 @@ import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import barterRoutes from "./routes/barterRoutes";
 import productRoutes from "./routes/productRoutes";
+import adminRoutes from "./routes/adminRoutes";
 import { notFound, errorHandler } from "./middleware/errorMiddleware";
 
 dotenv.config();
@@ -37,6 +38,7 @@ app.get("/", (req, res) => {
 app.use("/api/barter", barterRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
 
 // --- Error Handling Middleware ---

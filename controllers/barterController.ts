@@ -81,9 +81,12 @@ const initiateBarter = asyncHandler(async (req: any, res: any) => {
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587, // or 465 for SSL
+    secure: false,
     auth: {
-      user: "mhmdnab004@gmail.com",
-      pass: "moudinab004",
+      user: process.env.USER,
+      pass: process.env.PASS,
     },
   });
 

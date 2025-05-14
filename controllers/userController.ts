@@ -1,6 +1,5 @@
 import User from "../models/User";
 import bcrypt from "bcryptjs";
-import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 
 const getUserProfile = asyncHandler(async (req: any, res: any) => {

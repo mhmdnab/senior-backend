@@ -6,9 +6,7 @@ import asyncHandler from "express-async-handler";
 import { Request, Response, NextFunction, RequestHandler } from "express";
 
 interface AuthRequest extends Request {
-  user?: {
-    _id: string;
-  };
+  user?: any;
 }
 
 // export const authUser = asyncHandler(async (req: any, res: any, next: any) => {
@@ -44,11 +42,11 @@ interface AuthRequest extends Request {
 //   }
 // });
 
-export const protect = (
+export const protect = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
-): void => {
+): Promise<void> => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -57,17 +55,35 @@ export const protect = (
   }
 
   const token = authHeader.split(" ")[1];
-  // console.log("Token:", token);
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
       id: string;
     };
-    req.user = { _id: decoded.id };
-    console.log("req.user:", req.user._id);
+
+    const user = await User.findById(decoded.id).select("-password");
+
+    if (!user) {
+      res.status(401).json({ message: "Not authorized, user not found" });
+      return;
+    }
+
+    req.user = user;
     next();
   } catch (err) {
     console.error("JWT Verification Error:", err);
     res.status(401).json({ message: "Not authorized, token invalid" });
+  }
+};
+
+export const isAdmin = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ message: "Not authorized as admin" });
   }
 };
