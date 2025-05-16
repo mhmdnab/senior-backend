@@ -1,6 +1,7 @@
 import User from "../models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { Request, Response } from "express";
 
 export const register = async (req: any, res: any) => {
   const { username, email, password } = req.body;
@@ -37,23 +38,36 @@ export const login = async (req: any, res: any) => {
   const { email, password } = req.body;
 
   try {
-    // Find user
+    // Find user by email
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User not found" });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
 
-    // Compare password
+    // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
+    if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-    // Generate token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, {
-      expiresIn: "7d",
-    });
+    // Generate JWT
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: "7d",
+      }
+    );
 
+    // Send response with token and user data
     res.status(200).json({
       token,
-      user: { id: user._id, username: user.username, email: user.email },
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (err: any) {
     console.error("Login error:", err.message);
