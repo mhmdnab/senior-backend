@@ -73,7 +73,7 @@ const initiateBarter = asyncHandler(async (req: any, res: any) => {
   });
 
   const mailOptions = {
-    from: "mhmdnab004@gmail.com",
+    from: process.env.USER || "mhmdnab004@gmail.com",
     to: otherUserEmail,
     subject: "Barter Request Initiated",
     text: `You have initiated a barter request for your product. Please contact them to proceed.`,
