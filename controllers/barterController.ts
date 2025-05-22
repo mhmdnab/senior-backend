@@ -10,6 +10,8 @@ import Item from "../models/Product";
 // @access  Private (Protected) - requires a valid token via protect middleware
 
 const initiateBarter = asyncHandler(async (req: any, res: any) => {
+  console.log(req.user);
+
   if (!req.user?._id) {
     res.status(401);
     throw new Error("User not authenticated");
@@ -60,7 +62,8 @@ const initiateBarter = asyncHandler(async (req: any, res: any) => {
     );
   }
 
-  const otherUserEmail = otherUser?.email;
+  const otherUserEmail = otherUser.email;
+  const userEmail = req.user?.email;
 
   if (!otherUserEmail) {
     res.status(500);
@@ -76,7 +79,7 @@ const initiateBarter = asyncHandler(async (req: any, res: any) => {
     from: process.env.USER || "mhmdnab004@gmail.com",
     to: otherUserEmail,
     subject: "Barter Request Initiated",
-    text: `You have initiated a barter request for your product. Please contact them to proceed.`,
+    text: `${userEmail} have initiated a barter request for your product. Please contact them to proceed.`,
   };
 
   const transporter = nodemailer.createTransport({
