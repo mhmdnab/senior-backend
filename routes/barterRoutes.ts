@@ -1,12 +1,15 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware";
-import { initiateBarter } from "../controllers/barterController";
+import {
+  decideBarter,
+  getBarterById,
+  initiateBarter,
+} from "../controllers/barterController";
 
 const router = express.Router();
 
 router.post("/initiate", protect, initiateBarter);
-router.get("/test", (req, res) => {
-  res.send("Test route works!");
-});
+router.get("/:barterId", getBarterById);
+router.patch("/:barterId/decision", protect, decideBarter);
 
 export default router;
