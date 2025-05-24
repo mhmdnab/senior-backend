@@ -31,26 +31,34 @@ const getProductById = asyncHandler(async (req, res) => {
 });
 
 const addProduct = asyncHandler(async (req: any, res: any) => {
-  const { title, description, category, images } = req.body;
+  const { title, description, category } = req.body;
 
   if (!title) {
     res.status(400);
     throw new Error("Title is required");
   }
-  //
+
   if (!req.user?._id) {
     res.status(401);
     throw new Error("User not authenticated");
   }
 
+  if (!req.file) {
+    res.status(400);
+    throw new Error("Image file is required");
+  }
+
+  // Build relative URL to serve later via /uploads
+  const imageUrl = `/uploads/${req.file.filename}`;
+
   const item = new Item({
     title,
     description,
     category,
-    images,
+    images: [imageUrl],
     owner: req.user._id,
   });
-  console.log(req.user._id);
+
   const createdItem = await item.save();
   res.status(201).json(createdItem);
 });

@@ -2,7 +2,7 @@ import User from "../models/User";
 import bcrypt from "bcryptjs";
 import asyncHandler from "express-async-handler";
 
-const getUserProfile = asyncHandler(async (req: any, res: any) => {
+export const getUserProfile = asyncHandler(async (req: any, res: any) => {
   const user = await User.findById(req.user._id);
 
   if (user) {
@@ -18,61 +18,22 @@ const getUserProfile = asyncHandler(async (req: any, res: any) => {
   }
 });
 
-const updateUserProfile = asyncHandler(async (req: any, res: any) => {
-  const user = await User.findById(req.user.id);
+export const updateProfile = asyncHandler(async (req: any, res) => {
+  const userId = req.user._id;
+  const { email, oldPassword, newPassword } = req.body;
 
-  if (user) {
-    user.username = req.body.username || user.username;
-    user.email = req.body.email || user.email;
+  const user = await User.findById(userId);
+  if (!user) throw new Error("User not found");
 
-    if (req.body.password) {
-      const rounds = 10;
-      user.password = await bcrypt.hash(req.body.password, rounds);
-    }
+  const isMatch = await bcrypt.compare(oldPassword, user.password);
+  if (!isMatch) throw new Error("Old password is incorrect");
 
-    const updatedUser = await user.save();
+  user.email = email || user.email;
+  if (newPassword) user.password = await bcrypt.hash(newPassword, 10);
 
-    res.json({
-      _id: updatedUser._id,
-      username: updatedUser.username,
-      email: updatedUser.email,
-      role: updatedUser.role,
-      createdAt: updatedUser.createdAt,
-      message: "Profile updated successfully",
-    });
-  } else {
-    res.status(404);
-    throw new Error("User not found");
-  }
+  await user.save();
+
+  res
+    .status(200)
+    .json({ message: "Profile updated successfully", email: user.email });
 });
-
-export const updatePassword = async (req: any, res: any) => {
-  try {
-    const { email, password, confirmPassword } = req.body;
-
-    if (!email || !password || !confirmPassword) {
-      return res.status(400).json({ message: "All fields are required." });
-    }
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({ message: "Passwords do not match." });
-    }
-
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12);
-    user.password = hashedPassword;
-    await user.save();
-
-    return res.status(200).json({ message: "Password updated successfully." });
-  } catch (error) {
-    console.error("Password update error:", error);
-    return res.status(500).json({ message: "Server error." });
-  }
-};
-
-export { getUserProfile, updateUserProfile };

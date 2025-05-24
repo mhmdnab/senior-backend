@@ -9,7 +9,6 @@ interface AuthRequest extends Request {
   user?: any;
 }
 
-// export const authUser = asyncHandler(async (req: any, res: any, next: any) => {
 //   let token;
 
 //   if (

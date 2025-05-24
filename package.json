@@ -20,6 +20,7 @@
     "express-async-handler": "^1.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.13.2",
+    "multer": "^2.0.0",
     "nodemailer": "^7.0.3",
     "router": "^2.2.0"
   },
@@ -29,6 +30,7 @@
     "@types/express": "^5.0.1",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/mongoose": "^5.11.96",
+    "@types/multer": "^1.4.12",
     "@types/node": "^22.14.0",
     "@types/nodemailer": "^6.4.17",
     "dotenv": "^16.4.7",

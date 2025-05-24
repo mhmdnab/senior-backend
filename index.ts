@@ -10,6 +10,7 @@ import barterRoutes from "./routes/barterRoutes";
 import productRoutes from "./routes/productRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import { notFound, errorHandler } from "./middleware/errorMiddleware";
+import path from "path";
 
 dotenv.config();
 const app = express();
@@ -29,7 +30,8 @@ app.get("/", (req, res) => {
   res.send("Backend is running ✨");
 });
 
-// --- Mounting Routes ---
+// --- Routes ---
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/barter", barterRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);

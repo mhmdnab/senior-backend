@@ -1,4 +1,4 @@
-// productRoutes.js
+// productRoutes.ts
 
 import express from "express";
 import {
@@ -9,11 +9,12 @@ import {
   deleteProduct,
 } from "../controllers/productsController";
 import { protect } from "../middleware/authMiddleware";
+import { upload } from "../middleware/uploadMiddlware";
 
 const router = express.Router();
 router.get("/", getProducts);
 router.get("/my-products", protect, getUserProducts);
-router.post("/", protect, addProduct);
+router.post("/", protect, upload.single("image"), addProduct);
 router.delete("/:id", protect, deleteProduct);
 router.get("/:id", getProductById);
 
