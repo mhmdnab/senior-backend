@@ -4,12 +4,12 @@ import mongoose from "mongoose";
 const barterSchema = new mongoose.Schema({
   productOfferedId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Product",
+    ref: "Item",
     required: true,
   },
   productRequestedId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Product",
+    ref: "Item",
     required: true,
   },
   offeredBy: {

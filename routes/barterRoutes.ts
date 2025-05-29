@@ -1,5 +1,5 @@
 import express from "express";
-import { protect } from "../middleware/authMiddleware";
+import { protect, isAdmin } from "../middleware/authMiddleware";
 import {
   decideBarter,
   getBarterById,
@@ -9,7 +9,7 @@ import {
 const router = express.Router();
 
 router.post("/initiate", protect, initiateBarter);
-router.get("/:barterId", getBarterById);
+router.get("/:barterId", protect, getBarterById);
 router.patch("/:barterId/decision", protect, decideBarter);
 
 export default router;
