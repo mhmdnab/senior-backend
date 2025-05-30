@@ -1,11 +1,13 @@
 import multer from "multer";
 import path from "path";
 
+const uploadsDir = path.join(__dirname, "uploads");
+
 const storage = multer.diskStorage({
   destination(req, file, cb) {
-    cb(null, path.join(__dirname, "uploads"));
+    cb(null, uploadsDir);
   },
-  filename: function (req, file, cb) {
+  filename(req, file, cb) {
     const ext = path.extname(file.originalname);
     cb(null, `${Date.now()}${ext}`);
   },
