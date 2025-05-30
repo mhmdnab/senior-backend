@@ -15,7 +15,15 @@ import path from "path";
 dotenv.config();
 const app = express();
 // --- Middleware Setup ---
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "https://senior-frontend-eta.vercel.app/", //Vercel URL
+      "http://localhost:3000", //localhost
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
