@@ -15,13 +15,36 @@ import path from "path";
 dotenv.config();
 const app = express();
 // --- Middleware Setup ---
+const FRONTEND_URLS = [
+  "https://senior-frontend-eta.vercel.app",
+  "http://localhost:3000",
+];
+
 app.use(
   cors({
-    origin: [
-      "https://senior-frontend-eta.vercel.app/", //Vercel URL
-      "http://localhost:3000", //localhost
+    origin: (incomingOrigin, callback) => {
+      // allow requests with no origin (like mobile apps or curl)
+      if (!incomingOrigin) return callback(null, true);
+
+      if (FRONTEND_URLS.includes(incomingOrigin)) {
+        // echo back the exact origin
+        callback(null, incomingOrigin);
+      } else {
+        callback(
+          new Error(`CORS policy: origin ${incomingOrigin} not allowed`),
+          false
+        );
+      }
+    },
+    credentials: true, // send Access-Control-Allow-Credentials: true
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      // send Access-Control-Allow-Headers
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
     ],
-    credentials: true,
   })
 );
 app.use(express.json());
