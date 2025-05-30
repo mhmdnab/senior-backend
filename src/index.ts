@@ -56,12 +56,12 @@ app.get("/", (req, res) => {
 });
 
 // --- Routes ---
-app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 app.use("/api/barter", barterRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // --- Error Handling Middleware ---
 app.use(notFound);
