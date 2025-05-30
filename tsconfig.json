@@ -1,12 +1,19 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
     "target": "ES2020",
-    "jsx": "react",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS",
+    "rootDir": ".",
+    "outDir": "dist",
     "strict": true,
-    "outDir": "./dist",
+    "esModuleInterop": true,
     "skipLibCheck": true
-  }
+  },
+  "include": [
+    "index.ts",
+    "controllers/**/*",
+    "routes/**/*",
+    "models/**/*",
+    "middleware/**/*",
+    "utils/**/*"
+  ]
 }
