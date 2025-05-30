@@ -31,6 +31,16 @@ const getProductById = asyncHandler(async (req, res) => {
 });
 
 const addProduct = asyncHandler(async (req: any, res: any) => {
+  console.log("📥 [addProduct] req.body:", req.body);
+  console.log(
+    "📥 [addProduct] req.file:",
+    req.file && {
+      filename: req.file.filename,
+      path: req.file.path,
+      mimetype: req.file.mimetype,
+    }
+  );
+  console.log("📥 [addProduct] req.user._id:", req.user?._id);
   const { title, description, category } = req.body;
 
   if (!title) {
@@ -58,7 +68,7 @@ const addProduct = asyncHandler(async (req: any, res: any) => {
     images: [imageUrl],
     owner: req.user._id,
   });
-
+  console.log("💾 [addProduct] creating Item with:", item);
   const createdItem = await item.save();
   res.status(201).json(createdItem);
 });
