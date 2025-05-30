@@ -2,18 +2,11 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "CommonJS",
-    "rootDir": ".",
-    "outDir": "dist",
+    "rootDir": "src", // <-- compile all TS under src/
+    "outDir": "src/dist", // <-- emit JS into src/dist/
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": [
-    "index.ts",
-    "controllers/**/*",
-    "routes/**/*",
-    "models/**/*",
-    "middleware/**/*",
-    "utils/**/*"
-  ]
+  "include": ["src/**/*.ts"]
 }
