@@ -11,6 +11,7 @@ import productRoutes from "./routes/productRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import { notFound, errorHandler } from "./middleware/errorMiddleware";
 import path from "path";
+import fs from "fs";
 
 dotenv.config();
 const app = express();
@@ -19,6 +20,15 @@ const FRONTEND_URLS = [
   "https://senior-frontend-eta.vercel.app",
   "http://localhost:3000",
 ];
+
+// Ensure the uploads folder exists at startup
+const uploadsDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  console.log("⚠️  uploads directory did not exist—creating it:", uploadsDir);
+  fs.mkdirSync(uploadsDir, { recursive: true });
+} else {
+  console.log("✅ uploads directory already exists:", uploadsDir);
+}
 
 app.use(
   cors({
@@ -55,18 +65,24 @@ app.get("/", (req, res) => {
   res.send("Backend is running ✨");
 });
 
-// --- Routes ---
+console.log("🔍 (index) process.cwd():", process.cwd());
+console.log("🔍 (index) Express will serve /uploads from:", uploadsDir);
+
+// 2) Tell Express to serve /uploads from `${process.cwd()}/uploads`
+const staticUploadsPath = path.join(process.cwd(), "uploads");
+console.log("Express will serve /uploads from:", staticUploadsPath);
+app.use("/uploads", express.static(staticUploadsPath));
+
+// 3) Your routes (MUST come *after* the static line)
 app.use("/api/barter", barterRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
-app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
-// --- Error Handling Middleware ---
+// 4) Error handlers
 app.use(notFound);
 app.use(errorHandler);
-
 // --- MongoDB Connection & Server Start ---
 const PORT = process.env.PORT || 5001;
 

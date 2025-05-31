@@ -1,10 +1,18 @@
+// src/middleware/uploadMiddleware.ts
 import multer from "multer";
 import path from "path";
 
-const uploadsDir = path.resolve("uploads");
+// 1) On *any* environment, write into `${process.cwd()}/uploads`
+const uploadsDir = path.join(process.cwd(), "uploads");
+console.log("🔍 (uploadMiddleware) process.cwd():", process.cwd());
+console.log("🔍 (uploadMiddleware) Multer will write to:", uploadsDir);
+
+console.log("Multer will write to           :", uploadsDir);
 
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadsDir),
+  destination: (_req, _file, cb) => {
+    cb(null, uploadsDir);
+  },
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname);
     cb(null, `${Date.now()}${ext}`);
