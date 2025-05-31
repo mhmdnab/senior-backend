@@ -37,7 +37,7 @@ app.use(
       }
     },
     credentials: true, // send Access-Control-Allow-Credentials: true
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: [
       // send Access-Control-Allow-Headers
       "Content-Type",
