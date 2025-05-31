@@ -81,8 +81,9 @@ const initiateBarter = asyncHandler(async (req: any, res: any) => {
   });
 
   // --- Generate the approval/decline link ---
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-  const approveDeclineLink = `${frontendUrl}/barter/respond?barterId=${barter._id}`;
+  const frontendUrl =
+    process.env.FRONTEND_URL || "https://senior-frontend-eta.vercel.app";
+  const approveDeclineLink = `${frontendUrl}/dakesh/respond?barterId=${barter._id}`;
 
   // --- Respond to frontend ---
   res.status(200).json({
@@ -131,19 +132,24 @@ const initiateBarter = asyncHandler(async (req: any, res: any) => {
 
 const decideBarter = asyncHandler(async (req, res) => {
   const { barterId } = req.params;
-  const { decision } = req.body; // 'approved' or 'declined'
+  const { decision } = req.body; // expects "approved" or "declined"
 
+  // 1) Validate incoming decision value:
   if (!["approved", "declined"].includes(decision)) {
     res.status(400);
-    throw new Error("Invalid decision value.");
+    throw new Error(
+      "Invalid decision value. Must be 'approved' or 'declined'."
+    );
   }
 
+  // 2) Fetch the barter by ID:
   const barter = await Barter.findById(barterId);
   if (!barter) {
     res.status(404);
     throw new Error("Barter not found.");
   }
 
+  // 3) Update item availability if approving, then set barter.status accordingly:
   if (decision === "approved") {
     // Mark both products as unavailable
     await Item.findByIdAndUpdate(barter.productOfferedId, {
@@ -154,18 +160,21 @@ const decideBarter = asyncHandler(async (req, res) => {
     });
     barter.status = "approved";
   } else {
+    // If declined, only update the barter.status
     barter.status = "declined";
   }
 
+  // 4) Save the updated barter document:
   await barter.save();
 
-  // Populate all info for frontend display
+  // 5) Re‐query + populate so the front end receives all details:
   const populatedBarter = await Barter.findById(barter._id)
     .populate("productOfferedId")
     .populate("productRequestedId")
     .populate("offeredBy")
     .populate("requestedFrom");
 
+  // 6) Return JSON with a message and the freshly populated barter object
   res.json({ message: `Barter ${decision}.`, barter: populatedBarter });
 });
 
