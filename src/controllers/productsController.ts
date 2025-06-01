@@ -11,9 +11,11 @@ const getProducts = asyncHandler(async (req, res) => {
     ? { category: { $regex: new RegExp(`^${category}$`, "i") } }
     : {};
 
-  const products = await Item.find(filter).populate("owner", "username");
-
-  res.status(200).json(products);
+  const products = await Item.find({ isAvailable: true }).populate(
+    "owner",
+    "username"
+  );
+  res.json(products);
 });
 
 const getProductById = asyncHandler(async (req, res) => {
