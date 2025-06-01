@@ -7,15 +7,17 @@ import User from "../models/User";
 const getProducts = asyncHandler(async (req, res) => {
   const { category } = req.query;
 
-  const filter = category
-    ? { category: { $regex: new RegExp(`^${category}$`, "i") } }
-    : {};
+  // Always require isAvailable: true
+  const filter: any = { isAvailable: true };
 
-  const products = await Item.find({ isAvailable: true }).populate(
-    "owner",
-    "username"
-  );
-  res.json(products);
+  // If a category was provided, add a case-insensitive regex on category
+  if (category) {
+    filter.category = { $regex: new RegExp(`^${category}$`, "i") };
+  }
+
+  const products = await Item.find(filter).populate("owner", "username");
+
+  res.status(200).json(products);
 });
 
 const getProductById = asyncHandler(async (req, res) => {
