@@ -130,11 +130,11 @@ const initiateBarter = asyncHandler(async (req: any, res: any) => {
 
 // ... your decideBarter code stays the same ...
 
-const decideBarter = asyncHandler(async (req, res) => {
+const decideBarter = asyncHandler(async (req: any, res: any) => {
   const { barterId } = req.params;
   const { decision } = req.body; // expects "approved" or "declined"
 
-  // 1) Validate incoming decision value:
+  // 1) Validate incoming decision value
   if (!["approved", "declined"].includes(decision)) {
     res.status(400);
     throw new Error(
@@ -142,39 +142,131 @@ const decideBarter = asyncHandler(async (req, res) => {
     );
   }
 
-  // 2) Fetch the barter by ID:
-  const barter = await Barter.findById(barterId);
+  // 2) Fetch the barter by ID, populating products and both users
+  const barter = await Barter.findById(barterId)
+    .populate("productOfferedId")
+    .populate("productRequestedId")
+    .populate("offeredBy", "username email")
+    .populate("requestedFrom", "username email");
+
   if (!barter) {
     res.status(404);
     throw new Error("Barter not found.");
   }
 
-  // 3) Update item availability if approving, then set barter.status accordingly:
+  // 3) Update item availability if approved, and set barter.status
   if (decision === "approved") {
-    // Mark both products as unavailable
-    await Item.findByIdAndUpdate(barter.productOfferedId, {
+    await Item.findByIdAndUpdate((barter.productOfferedId as any)._id, {
       isAvailable: false,
     });
-    await Item.findByIdAndUpdate(barter.productRequestedId, {
+    await Item.findByIdAndUpdate((barter.productRequestedId as any)._id, {
       isAvailable: false,
     });
     barter.status = "approved";
   } else {
-    // If declined, only update the barter.status
+    // decision === "declined"
     barter.status = "declined";
   }
 
-  // 4) Save the updated barter document:
+  // 4) Save the updated barter document
   await barter.save();
 
-  // 5) Re‐query + populate so the front end receives all details:
+  // 5) Send email to the barter initiator (offeredBy) whether approved or declined
+  {
+    // Cast through any so TypeScript allows .username / .email
+    const initiator = barter.offeredBy as any as {
+      username: string;
+      email: string;
+    };
+    const approver = barter.requestedFrom as any as {
+      username: string;
+      email: string;
+    };
+
+    // Build common transporter:
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 587, // or 465 for SSL
+      secure: false,
+      auth: {
+        user: process.env.USER, // e.g. "mhmdnab004@gmail.com"
+        pass: process.env.PASS, // your Gmail app password or account password
+      },
+    });
+
+    let subject: string;
+    let html: string;
+
+    if (decision === "approved") {
+      subject = "✅ Your barter has been approved!";
+      html = `
+        <p>Hi ${initiator.username},</p>
+        <p>Your barter request (ID: ${barter._id}) has been approved by ${
+        approver.username
+      }.</p>
+        <p><strong>Products involved:</strong></p>
+        <ul>
+          <li>You offered: <strong>${
+            (barter.productOfferedId as any).title
+          }</strong></li>
+          <li>They approved: <strong>${
+            (barter.productRequestedId as any).title
+          }</strong></li>
+        </ul>
+        <p>Both items are now marked as <em>unavailable</em> on the platform.</p>
+        <p>Thank you for using Dakesh!</p>
+        <br/>
+        <p>If you have any questions, simply reply to this email.</p>
+      `;
+    } else {
+      // decision === "declined"
+      subject = "❌ Your barter request was declined";
+      html = `
+        <p>Hi ${initiator.username},</p>
+        <p>We’re sorry to inform you that your barter request (ID: ${
+          barter._id
+        }) was declined by ${approver.username}.</p>
+        <p><strong>Products involved:</strong></p>
+        <ul>
+          <li>You offered: <strong>${
+            (barter.productOfferedId as any).title
+          }</strong></li>
+          <li>You requested: <strong>${
+            (barter.productRequestedId as any).title
+          }</strong></li>
+        </ul>
+        <p>Feel free to browse other items on Dakesh or try again later.</p>
+        <p>Thank you for using Dakesh!</p>
+        <br/>
+        <p>If you have any questions, simply reply to this email.</p>
+      `;
+    }
+
+    const mailOptions = {
+      from: process.env.USER || "mhmdnab004@gmail.com",
+      to: initiator.email,
+      subject,
+      html,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending decision email:", error);
+      } else {
+        console.log(`Decision email (${decision}) sent:`, info.response);
+      }
+    });
+  }
+
+  // 6) Re‐fetch the barter so it’s fully populated for the response
   const populatedBarter = await Barter.findById(barter._id)
     .populate("productOfferedId")
     .populate("productRequestedId")
-    .populate("offeredBy")
-    .populate("requestedFrom");
+    .populate("offeredBy", "username email")
+    .populate("requestedFrom", "username email");
 
-  // 6) Return JSON with a message and the freshly populated barter object
+  // 7) Send the final JSON response
   res.json({ message: `Barter ${decision}.`, barter: populatedBarter });
 });
 
