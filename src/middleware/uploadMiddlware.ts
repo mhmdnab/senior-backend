@@ -15,7 +15,6 @@ const fileFilter = (
   }
 };
 
-// Now Multer will populate req.file.buffer instead of saving to /uploads/
 export const upload = multer({ storage, fileFilter });
 
 //(cb as any)
