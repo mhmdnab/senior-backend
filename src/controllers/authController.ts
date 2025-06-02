@@ -103,7 +103,7 @@ export const forgotPassword = async (req: any, res: any) => {
   await user.save({ validateBeforeSave: false });
 
   // 3) build reset URL (client‐side route)
-  const resetUrl = `https://senior-frontend-eta.vercel.app/reset-password?token=${resetToken}`;
+  const resetUrl = `https://senior-frontend-eta.vercel.app/reset-password/${resetToken}`;
 
   // 4) email text
   const message = `You requested a password reset. Click or copy/paste the link below into your browser within 15 minutes:\n\n${resetUrl}\n\nIf you didn't request this, please ignore.`;
