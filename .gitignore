@@ -17,3 +17,4 @@ src/dist/
 
 # Optional: If you are using nodemon or similar tools that create logs
 # *.nodemon.log
+/src/uploads
