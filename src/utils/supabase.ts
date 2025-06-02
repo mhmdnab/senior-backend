@@ -4,9 +4,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-if (!SERVICE_ROLE_KEY) {
+if (!SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error("Missing supabase role key!!");
 }
 
@@ -15,4 +15,7 @@ if (!SUPABASE_URL) {
 }
 
 // Remove the unsupported `fetch` field from the options object:
-export const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+export const supabaseAdmin = createClient(
+  SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY
+);
