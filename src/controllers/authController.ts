@@ -103,7 +103,7 @@ export const forgotPassword = async (req: any, res: any) => {
   await user.save({ validateBeforeSave: false });
 
   // 3) build reset URL (client‐side route)
-  const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
   // 4) email text
   const message = `You requested a password reset. Click or copy/paste the link below into your browser within 15 minutes:\n\n${resetUrl}\n\nIf you didn't request this, please ignore.`;
