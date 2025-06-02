@@ -35,16 +35,6 @@ const getProductById = asyncHandler(async (req, res) => {
 });
 
 const addProduct = asyncHandler(async (req: any, res: any) => {
-  console.log("📥 [addProduct] req.body:", req.body);
-  console.log(
-    "📥 [addProduct] req.file:",
-    req.file && {
-      filename: req.file.filename,
-      path: req.file.path,
-      mimetype: req.file.mimetype,
-    }
-  );
-  console.log("📥 [addProduct] req.user._id:", req.user?._id);
   const { title, description, category } = req.body;
 
   if (!title) {
@@ -63,7 +53,7 @@ const addProduct = asyncHandler(async (req: any, res: any) => {
   }
 
   // Build relative URL to serve later via /uploads
-  const imageUrl = `/uploads/${req.file.filename}`;
+  const imageUrl = `../uploads/${req.file.filename}`;
 
   const item = new Item({
     title,
