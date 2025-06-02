@@ -1,8 +1,8 @@
 // --- Imports ---
+import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
@@ -64,12 +64,6 @@ app.use(cookieParser());
 app.get("/", (req, res) => {
   res.send("Backend is running ✨");
 });
-
-console.log("🔍 (index) process.cwd():", process.cwd());
-console.log("🔍 (index) Express will serve /uploads from:", uploadsDir);
-
-// 2) Tell Express to serve /uploads from `${process.cwd()}/uploads`
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // 3) Your routes (MUST come *after* the static line)
 app.use("/api/barter", barterRoutes);

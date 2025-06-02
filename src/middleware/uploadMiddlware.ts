@@ -1,27 +1,21 @@
-// src/middleware/uploadMiddleware.ts
-
+// NEW: memoryStorage version
 import multer from "multer";
-import path from "path";
 
-// Make `uploadsDir` resolve to project-root/uploads:
-const uploadsDir = path.resolve("uploads"); // <-- this yields ".../project/uploads"
+const storage = multer.memoryStorage();
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}${ext}`);
-  },
-});
-
-const fileFilter = (req: any, file: Express.Multer.File, cb: any) => {
+const fileFilter = (
+  req: Express.Request,
+  file: Express.Multer.File,
+  cb: multer.FileFilterCallback
+) => {
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
-    cb(new Error("Only image files are allowed!"), false);
+    (cb as any)(new Error("Only image files are allowed!"), false);
   }
 };
 
+// Now Multer will populate req.file.buffer instead of saving to /uploads/
 export const upload = multer({ storage, fileFilter });
+
+//(cb as any)
