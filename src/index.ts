@@ -69,7 +69,7 @@ console.log("🔍 (index) process.cwd():", process.cwd());
 console.log("🔍 (index) Express will serve /uploads from:", uploadsDir);
 
 // 2) Tell Express to serve /uploads from `${process.cwd()}/uploads`
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // 3) Your routes (MUST come *after* the static line)
 app.use("/api/barter", barterRoutes);
