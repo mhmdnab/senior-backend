@@ -10,8 +10,6 @@ import barterRoutes from "./routes/barterRoutes";
 import productRoutes from "./routes/productRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import { notFound, errorHandler } from "./middleware/errorMiddleware";
-import path from "path";
-import fs from "fs";
 
 dotenv.config();
 const app = express();
@@ -20,15 +18,6 @@ const FRONTEND_URLS = [
   "https://senior-frontend-eta.vercel.app",
   "http://localhost:3000",
 ];
-
-// Ensure the uploads folder exists at startup
-const uploadsDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  console.log("⚠️  uploads directory did not exist—creating it:", uploadsDir);
-  fs.mkdirSync(uploadsDir, { recursive: true });
-} else {
-  console.log("✅ uploads directory already exists:", uploadsDir);
-}
 
 app.use(
   cors({
