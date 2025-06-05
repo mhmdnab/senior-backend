@@ -12,7 +12,15 @@ const itemSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ["Electronics", "Clothing", "Books", "Toys", "Home", "Other"],
+    enum: [
+      "Electronics",
+      "Clothing",
+      "Books",
+      "Toys",
+      "Home",
+      "Automobiles",
+      "Other",
+    ],
     default: "Other",
   },
   images: [String],

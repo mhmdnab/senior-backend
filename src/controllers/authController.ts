@@ -125,9 +125,6 @@ export const forgotPassword = async (req: any, res: any) => {
   }
 };
 
-// @route   PUT /api/auth/reset-password/:token
-// @desc    Verify token & set new password
-// @access  Public
 export const resetPassword = async (req: any, res: any) => {
   const { token } = req.params;
   const { password } = req.body;
@@ -136,10 +133,8 @@ export const resetPassword = async (req: any, res: any) => {
     throw new Error("Please provide a new password");
   }
 
-  // hash the token received in URL to compare with DB
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-  // find user by hashed token and ensure token isn’t expired
   const user = await User.findOne({
     resetPasswordToken: hashedToken,
     resetPasswordExpire: { $gt: Date.now() },
@@ -150,7 +145,6 @@ export const resetPassword = async (req: any, res: any) => {
     throw new Error("Token is invalid or has expired");
   }
 
-  // set the new password & clear reset fields
   user.password = password;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;

@@ -11,8 +11,7 @@ import Barter from "../models/Barter";
 // @access  Private (Protected) - requires a valid token via protect middleware
 
 const initiateBarter = asyncHandler(async (req: any, res: any) => {
-  console.log(req.user);
-
+  // 1) Ensure user is authenticated
   if (!req.user?._id) {
     res.status(401);
     throw new Error("User not authenticated");
@@ -20,11 +19,11 @@ const initiateBarter = asyncHandler(async (req: any, res: any) => {
 
   const { productIdToBarterFor, productOfferedId } = req.body;
 
+  // 2) Basic validation of IDs
   if (!productIdToBarterFor || !productOfferedId) {
     res.status(400);
     throw new Error("Missing product IDs in request body");
   }
-
   if (
     !mongoose.Types.ObjectId.isValid(productIdToBarterFor) ||
     !mongoose.Types.ObjectId.isValid(productOfferedId)
@@ -33,29 +32,35 @@ const initiateBarter = asyncHandler(async (req: any, res: any) => {
     throw new Error("Invalid product ID format");
   }
 
+  // 3) Load the “offered” product from the database
   const productOffered = await Item.findById(productOfferedId);
-
   if (!productOffered) {
     res.status(404);
     throw new Error("Product you offered for barter not found");
   }
-
+  // Verify ownership
   if (productOffered.owner.toString() !== req.user._id.toString()) {
     res.status(403);
     throw new Error("You do not own the product you are offering for barter");
   }
 
+  // 4) Load the “requested” product (the one we want to barter for), and populate its owner
   const productToBarterFor = await Item.findById(productIdToBarterFor).populate(
     "owner"
   );
-
   if (!productToBarterFor) {
     res.status(404);
     throw new Error("The product you want to barter for was not found");
   }
 
-  const otherUser = productToBarterFor.owner;
+  // 5) ENSURE CATEGORIES MATCH
+  if (productOffered.category !== productToBarterFor.category) {
+    res.status(400);
+    throw new Error("Both products must be in the same category to barter");
+  }
 
+  // 6) Ensure user is not trying to barter for their own product
+  const otherUser = productToBarterFor.owner;
   if (otherUser && otherUser._id.toString() === req.user._id.toString()) {
     res.status(400);
     throw new Error(
@@ -63,15 +68,7 @@ const initiateBarter = asyncHandler(async (req: any, res: any) => {
     );
   }
 
-  const otherUserEmail = otherUser.email;
-  const userEmail = req.user?.email;
-
-  if (!otherUserEmail) {
-    res.status(500);
-    throw new Error("Could not retrieve the other user's email address");
-  }
-
-  // --- Create the Barter Document (pending) ---
+  // 7) Now we can create the Barter document
   const barter = await Barter.create({
     productOfferedId,
     productRequestedId: productIdToBarterFor,
@@ -80,21 +77,22 @@ const initiateBarter = asyncHandler(async (req: any, res: any) => {
     status: "pending",
   });
 
-  // --- Generate the approval/decline link ---
+  // 8) Build the approve/decline link for the owner of the “requested” product
   const frontendUrl =
     process.env.FRONTEND_URL || "https://senior-frontend-eta.vercel.app";
   const approveDeclineLink = `${frontendUrl}/dakesh/respond?barterId=${barter._id}`;
 
-  // --- Respond to frontend ---
+  // 9) Respond immediately so front-end can show success
   res.status(200).json({
     message: "Barter initiated successfully. Contact the other user.",
-    otherUserEmail: otherUserEmail,
+    otherUserEmail: otherUser.email,
   });
 
-  // --- Send Email to the other user with approve/decline link ---
+  // 10) Send an e-mail to the owner of the “requested” product
+  const userEmail = req.user.email; // the initiator’s email
   const mailOptions = {
-    from: process.env.USER || "mhmdnab004@gmail.com",
-    to: otherUserEmail,
+    from: process.env.USER || "your-gmail@gmail.com",
+    to: otherUser.email,
     subject: "Barter Request Initiated",
     html: `
       <p>${userEmail} has initiated a barter request for your product.</p>
@@ -104,7 +102,7 @@ const initiateBarter = asyncHandler(async (req: any, res: any) => {
         </a>
       </p>
       <p>If you approve, both products will be marked as unavailable.</p>
-      <p>Or copy and paste this link in your browser: <br/>${approveDeclineLink}</p>
+      <p>Or copy/paste this link: <br/>${approveDeclineLink}</p>
     `,
   };
 
